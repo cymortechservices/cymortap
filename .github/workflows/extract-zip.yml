@@ -1,0 +1,64 @@
+name: Extract CYMOR-TAP.zip into repo root
+
+on:
+  push:
+    paths:
+      - "CYMOR-TAP.zip"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: extract-zip
+  cancel-in-progress: false
+
+jobs:
+  extract:
+    # Skip runs caused by the bot's own commit (the one that removes the zip)
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check the zip exists
+        run: |
+          if [ ! -f CYMOR-TAP.zip ]; then
+            echo "CYMOR-TAP.zip not found in the repo root. Nothing to do."
+            exit 1
+          fi
+
+      - name: Unzip to a temp folder
+        run: |
+          rm -rf "$RUNNER_TEMP/unpacked"
+          mkdir -p "$RUNNER_TEMP/unpacked"
+          unzip -q CYMOR-TAP.zip -d "$RUNNER_TEMP/unpacked"
+
+      - name: Copy contents into the repo root
+        run: |
+          src="$RUNNER_TEMP/unpacked"
+          # If the zip has a single top-level folder (CYMOR-TAP/), use its contents
+          count=$(find "$src" -mindepth 1 -maxdepth 1 | wc -l)
+          if [ "$count" -eq 1 ] && [ -d "$(find "$src" -mindepth 1 -maxdepth 1)" ]; then
+            src="$(find "$src" -mindepth 1 -maxdepth 1)"
+          fi
+          # Never touch .git or .github (workflow files need extra token permission)
+          rsync -a --exclude '.git/' --exclude '.github/' "$src"/ ./
+          # Remove stray macOS junk if present
+          rm -rf __MACOSX
+
+      - name: Remove the zip
+        run: git rm -f --quiet CYMOR-TAP.zip
+
+      - name: Commit and push
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "Extract CYMOR-TAP.zip into repo root"
+            git push
+          fi
