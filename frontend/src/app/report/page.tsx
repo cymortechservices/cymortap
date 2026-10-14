@@ -1,7 +1,7 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { Suspense, useState } from 'react';
+import { Suspense, useState, type FormEvent } from 'react';
 import { PageShell } from '@/components/PageShell';
 import { Alert, Button, Field } from '@/components/ui';
 import { api, ApiError } from '@/lib/api';
@@ -14,7 +14,7 @@ function ReportForm() {
   const [state, setState] = useState<{ tone: 'success' | 'error'; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
 
-  async function submit(e: React.FormEvent) {
+  async function submit(e: FormEvent) {
     e.preventDefault();
     setBusy(true);
     setState(null);

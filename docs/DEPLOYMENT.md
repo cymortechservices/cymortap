@@ -13,7 +13,7 @@ Two independent deployments: **frontend on Vercel**, **backend on Render**, **da
 
 ## Backend on Render
 Option A, Blueprint: push the repo, Render → New → Blueprint, pick the repo (it reads `render.yaml`).
-Option B, manual: New → Web Service, root directory `backend`, runtime Node, build `npm ci && npm run build`, start `npm start`, health check path `/health`.
+Option B, manual: New → Web Service, root directory `backend`, runtime Node, build `npm install && npm run build`, start `npm start`, health check path `/health`.
 
 Set environment variables:
 
@@ -61,4 +61,5 @@ Local testing needs no DNS: `SHORT_LINK_BASE_URL=http://localhost:4000`.
 - **Dashboard logs you out**: cookie blocked; see COOKIE_* above.
 - **Backend crashes on boot**: the error names the missing variable.
 - **Render cold starts**: free instances sleep; the first request can take ~30 s. A paid plan avoids this.
-- **`npm ci` fails**: no lockfile committed. Run `npm install` locally and commit `package-lock.json`.
+- **`npm ci` fails**: no lockfile committed. Use `npm install` as the install/build command, or run `npm install` locally and commit `package-lock.json` first.
+- **Frontend on `*.vercel.app` and backend on `*.onrender.com`**: these are different sites, so set `COOKIE_SAMESITE=none` on the backend (cookies become `Secure` automatically). Safari and some privacy modes block such third-party cookies, so for real users put both on subdomains of one domain and use `lax`.

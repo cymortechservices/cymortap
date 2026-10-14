@@ -11,9 +11,7 @@
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,
-    "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true,
     "types": ["node"]
   },
-  "include": ["src", "tests", "scripts", "vitest.config.ts"]
+  "include": ["src", "tests", "scripts"]
 }

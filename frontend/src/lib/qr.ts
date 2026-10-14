@@ -1,8 +1,8 @@
-import QRCode from 'qrcode';
+import { toDataURL } from 'qrcode';
 
 /** QR codes always encode the branded CYMOR TAP link, never the WhatsApp URL. */
 export const qrDataUrl = (url: string, width = 1024) =>
-  QRCode.toDataURL(url, { width, margin: 2, errorCorrectionLevel: 'M', color: { dark: '#04101f', light: '#ffffff' } });
+  toDataURL(url, { width, margin: 2, errorCorrectionLevel: 'M', color: { dark: '#04101f', light: '#ffffff' } });
 
 export async function downloadQr(url: string, slug: string) {
   const dataUrl = await qrDataUrl(url, 1200);

@@ -1,15 +1,15 @@
-import bcrypt from 'bcryptjs';
+import { compare, hash, hashSync } from 'bcryptjs';
 import { Types } from 'mongoose';
 import { env } from '../config/env';
 import { ClickEvent, Link, PasswordReset, Report, Session, User } from '../models';
 import type { UserDocument } from '../models/User';
-import { AppError, conflict, unauthorized } from '../utils/errors';
+import { AppError, conflict } from '../utils/errors';
 import { randomToken, sha256 } from '../utils/crypto';
 import { logger } from '../utils/logger';
 import { mailConfigured, sendMail } from './mailer';
 
 const BCRYPT_COST = 12;
-const DUMMY_HASH = bcrypt.hashSync('cymor-tap-dummy-password', BCRYPT_COST);
+const DUMMY_HASH = hashSync('cymor-tap-dummy-password', BCRYPT_COST);
 
 export const userDto = (u: UserDocument) => ({
   id: String(u._id),
@@ -43,7 +43,7 @@ export async function destroySession(sessionId: string) {
 export async function register(input: { email: string; password: string; displayName: string }, userAgent?: string) {
   const existing = await User.exists({ email: input.email });
   if (existing) throw conflict('EMAIL_TAKEN', 'An account with this email already exists. Try signing in.');
-  const passwordHash = await bcrypt.hash(input.password, BCRYPT_COST);
+  const passwordHash = await hash(input.password, BCRYPT_COST);
   let user: UserDocument;
   try {
     user = await User.create({ email: input.email, passwordHash, displayName: input.displayName });
@@ -58,7 +58,7 @@ export async function register(input: { email: string; password: string; display
 export async function login(input: { email: string; password: string }, userAgent?: string) {
   const user = await User.findOne({ email: input.email }).select('+passwordHash');
   // Always run one bcrypt comparison so response time does not reveal whether the email exists.
-  const ok = await bcrypt.compare(input.password, user?.passwordHash ?? DUMMY_HASH);
+  const ok = await compare(input.password, user?.passwordHash ?? DUMMY_HASH);
   if (!user || !ok) throw new AppError(401, 'INVALID_CREDENTIALS', 'Email or password is incorrect.');
   if (user.status !== 'active') throw new AppError(403, 'ACCOUNT_SUSPENDED', 'This account is suspended. Contact support.');
   const session = await createSession(user._id, userAgent);
@@ -83,7 +83,7 @@ export async function requestPasswordReset(email: string) {
 export async function resetPassword(token: string, password: string) {
   const reset = await PasswordReset.findOne({ tokenHash: sha256(token), usedAt: { $exists: false }, expiresAt: { $gt: new Date() } });
   if (!reset) throw new AppError(400, 'INVALID_RESET_TOKEN', 'This reset link is invalid or has expired. Request a new one.');
-  const passwordHash = await bcrypt.hash(password, BCRYPT_COST);
+  const passwordHash = await hash(password, BCRYPT_COST);
   await User.updateOne({ _id: reset.user }, { passwordHash });
   reset.usedAt = new Date();
   await reset.save();
@@ -92,14 +92,14 @@ export async function resetPassword(token: string, password: string) {
 
 export async function verifyPassword(userId: Types.ObjectId, password: string) {
   const user = await User.findById(userId).select('+passwordHash');
-  if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
+  if (!user || !(await compare(password, user.passwordHash))) {
     throw new AppError(403, 'WRONG_PASSWORD', 'That password is not correct.');
   }
 }
 
 export async function changePassword(user: UserDocument, sessionId: string, current: string, next: string) {
   await verifyPassword(user._id, current);
-  const passwordHash = await bcrypt.hash(next, BCRYPT_COST);
+  const passwordHash = await hash(next, BCRYPT_COST);
   await User.updateOne({ _id: user._id }, { passwordHash });
   await Session.deleteMany({ user: user._id, _id: { $ne: sessionId } });
 }
@@ -119,7 +119,3 @@ export async function deleteAccount(user: UserDocument, password: string) {
   await User.deleteOne({ _id: user._id });
 }
 
-export function ensureUnauthorizedIfMissing<T>(v: T | null | undefined): T {
-  if (!v) throw unauthorized();
-  return v;
-}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { Alert, Button, Field } from '@/components/ui';
 import { api, ApiError } from '@/lib/api';
@@ -24,7 +24,7 @@ export default function SettingsPage() {
 
   if (!user) return null;
 
-  async function saveProfile(e: React.FormEvent) {
+  async function saveProfile(e: FormEvent) {
     e.preventDefault();
     setBusy('profile');
     setProfileState(null);
@@ -39,7 +39,7 @@ export default function SettingsPage() {
     }
   }
 
-  async function changePassword(e: React.FormEvent) {
+  async function changePassword(e: FormEvent) {
     e.preventDefault();
     setBusy('pw');
     setPwState(null);

@@ -14,8 +14,8 @@ export class ApiError extends Error {
   }
 }
 
-async function request<T>(path: string, init: RequestInit & { json?: unknown } = {}): Promise<T> {
-  const { json, headers, ...rest } = init;
+async function request<T>(path: string, init: Omit<RequestInit, 'headers' | 'body'> & { json?: unknown } = {}): Promise<T> {
+  const { json, ...rest } = init;
   let res: Response;
   try {
     res = await fetch(`${API_BASE}/api/v1${path}`, {
@@ -24,14 +24,13 @@ async function request<T>(path: string, init: RequestInit & { json?: unknown } =
       headers: {
         'X-Requested-With': 'cymor-tap',
         ...(json !== undefined ? { 'Content-Type': 'application/json' } : {}),
-        ...headers,
       },
       body: json !== undefined ? JSON.stringify(json) : undefined,
     });
   } catch {
     throw new ApiError(0, 'NETWORK', 'Could not reach CYMOR TAP. Check your connection and try again.');
   }
-  if (res.headers.get('content-type')?.includes('text/csv')) return (await res.text()) as T;
+  if (res.headers.get('content-type')?.includes('text/csv')) return (await res.text()) as unknown as T;
   let body: { data?: T; error?: { code: string; message: string; fields?: Record<string, string> } } = {};
   try {
     body = await res.json();

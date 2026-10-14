@@ -84,13 +84,13 @@ The first backend test run downloads a MongoDB binary for `mongodb-memory-server
 
 ## 13. Build for production
 ```bash
-cd backend  && npm ci && npm run build && npm start
-cd frontend && npm ci && npm run build && npm start
+cd backend  && npm install && npm run build && npm start
+cd frontend && npm install && npm run build && npm start
 ```
 ## 14. Deploy the frontend to Vercel
 Import the repo, set **Root Directory** to `frontend`, add the two `NEXT_PUBLIC_*` variables, deploy. Details in docs/DEPLOYMENT.md.
 ## 15. Deploy the backend to Render
-Use `render.yaml` (Blueprint) or create a Web Service with root `backend`, build `npm ci && npm run build`, start `npm start`, health check `/health`. Set the environment variables, then run `npm run db:init` from a Render shell or locally against Atlas.
+Use `render.yaml` (Blueprint) or create a Web Service with root `backend`, build `npm install && npm run build`, start `npm start`, health check `/health`. Set the environment variables, then run `npm run db:init` from a Render shell or locally against Atlas.
 ## 16. Configure the branded link domain
 Point a subdomain such as `tap.yourdomain.com` at the Render service (custom domain + CNAME), then set `SHORT_LINK_BASE_URL=https://tap.yourdomain.com` on the backend and `NEXT_PUBLIC_SHORT_LINK_BASE_URL` on the frontend. The API serves `/<slug>` and `/r/<slug>`. If you prefer to keep the API on its default hostname, set `SHORT_LINK_BASE_URL=https://<service>.onrender.com/r`.
 

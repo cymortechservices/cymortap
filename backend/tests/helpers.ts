@@ -2,13 +2,13 @@ import mongoose from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import request from 'supertest';
 import { createApp } from '../src/app';
+import { syncAllIndexes } from '../src/config/db';
 
 let mongod: MongoMemoryServer | undefined;
 
 export async function startDb() {
   mongod = await MongoMemoryServer.create();
   await mongoose.connect(mongod.getUri());
-  const { syncAllIndexes } = await import('../src/config/db');
   await syncAllIndexes();
 }
 

@@ -1,6 +1,6 @@
-import { Types, type PipelineStage } from 'mongoose';
+import { Types, type FilterQuery, type PipelineStage } from 'mongoose';
 import { ClickEvent, Link } from '../models';
-import { effectiveStatus } from './linkService';
+import type { ILink } from '../models/Link';
 import { badRequest } from '../utils/errors';
 
 const ELIGIBLE = { isBot: false, isDuplicate: false } as const;
@@ -36,7 +36,7 @@ function fillDays(range: DateRange, rows: { _id: string; clicks: number; visitor
 }
 
 async function ownedLinkIds(ownerId: Types.ObjectId, linkId?: string) {
-  const filter: Record<string, unknown> = { owner: ownerId, status: { $ne: 'deleted' } };
+  const filter: FilterQuery<ILink> = { owner: ownerId, status: { $ne: 'deleted' } };
   if (linkId) filter._id = new Types.ObjectId(linkId);
   return (await Link.find(filter).select('_id')).map((l) => l._id);
 }
@@ -136,4 +136,3 @@ export async function exportCsv(ownerId: Types.ObjectId, range: DateRange, linkI
   return [header, ...rows].join('\n') + '\n';
 }
 
-export { effectiveStatus };

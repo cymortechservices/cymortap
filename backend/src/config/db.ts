@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import { env } from './env';
 import { logger } from '../utils/logger';
+import { User, Session, PasswordReset, Link, ClickEvent, Report } from '../models';
 
 export async function connectDb(uri = env.mongodbUri) {
   mongoose.set('strictQuery', true);
@@ -9,7 +10,6 @@ export async function connectDb(uri = env.mongodbUri) {
 }
 
 export async function syncAllIndexes() {
-  const { User, Session, PasswordReset, Link, ClickEvent, Report } = await import('../models');
   for (const m of [User, Session, PasswordReset, Link, ClickEvent, Report]) {
     await m.syncIndexes();
   }

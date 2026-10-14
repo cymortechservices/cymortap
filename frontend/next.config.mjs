@@ -2,6 +2,8 @@
 const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  // Lint runs in CI/locally with `npm run lint`; a lint warning must not block a deploy.
+  eslint: { ignoreDuringBuilds: true },
   async headers() {
     return [
       {

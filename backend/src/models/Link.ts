@@ -28,7 +28,7 @@ const linkSchema = new Schema<ILink>(
     message: { type: String, default: '', maxlength: MAX_MESSAGE_LENGTH },
     title: { type: String, trim: true, maxlength: MAX_TITLE_LENGTH },
     description: { type: String, trim: true, maxlength: MAX_DESCRIPTION_LENGTH },
-    theme: { type: String, enum: LINK_THEMES, default: 'midnight' },
+    theme: { type: String, enum: [...LINK_THEMES], default: 'midnight' },
     ownerType: { type: String, enum: ['guest', 'user'], required: true },
     owner: { type: Schema.Types.ObjectId, ref: 'User' },
     status: { type: String, enum: ['active', 'disabled', 'deleted'], default: 'active' },
