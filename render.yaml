@@ -1,0 +1,31 @@
+# Render Blueprint for the CYMOR TAP backend only.
+# The frontend is deployed separately on Vercel (see docs/DEPLOYMENT.md).
+services:
+  - type: web
+    name: cymor-tap-api
+    runtime: node
+    rootDir: backend
+    plan: free
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: 22
+      - key: MONGODB_URI
+        sync: false
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: FRONTEND_URL
+        sync: false
+      - key: ALLOWED_ORIGINS
+        sync: false
+      - key: SHORT_LINK_BASE_URL
+        sync: false
+      - key: COOKIE_SAMESITE
+        value: lax
+      - key: COOKIE_DOMAIN
+        sync: false
